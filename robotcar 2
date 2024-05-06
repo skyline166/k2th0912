@@ -1,0 +1,125 @@
+#include <pigpio.h>
+#include <unistd.h>
+#include <PCA9685.h>
+
+#define IN1_GPIO_NO 18
+#define IN2_GPIO_NO 19
+#define PWM_FREQ 60
+#define SERVO_PIN 15
+#define RIGHT 465
+#define CENTER 425
+#define LEFT 385
+#define MOVE_SPEED 4000  // Max pulse length out of 4096
+#define IN1 = 23  //right motor direction pin
+#define IN2 = 24  //right motor direction pin
+#define IN3 = 27  //left motor direction pin
+#define IN4 = 22  //left motor direction pin
+#define ENA = 0  //Right motor speed PCA9685 port 0
+#define ENB = 1  //Left motor speed PCA9685 port 1
+
+// Initialise the PCA9685 using the default address (0x40)
+// Alternatively specify a different address and/or bus:
+// pwm = Adafruit_PCA9685.PCA9685(address=0x41, busnum=2)
+// Set frequency to 60hz, good for servos
+
+int changespeed(int speed);
+int stopcar(void);
+int forward(void);
+int backward(void)
+int steer(angle);
+
+int changespeed(int speed){
+	pwm.set_pwm(ENA, 0, speed);
+	pwm.set_pwm(ENB, 0, speed);
+	return 0;
+	}
+
+int stopcar(void){
+	gpioWrite(IN1, PI_LOW);
+	gpioWrite(IN2, PI_LOW);
+	gpioWrite(IN3, PI_LOW);
+	gpioWrite(IN4, PI_LOW);
+	changespeed(0);
+	return 0;
+	}
+
+int forward(void){
+	gpioWrite(IN1, PI_HIGH);
+	gpioWrite(IN2, PI_LOW);
+	gpioWrite(IN3, PI_HIGH);
+	gpioWrite(IN4, PI_LOW);
+	changespeed(MOVE_SPEED);
+	return 0;
+	}
+	
+int backward(void){
+	gpioWrite(IN1, PI_LOW);
+	gpioWrite(IN2, PI_HIGH);
+	gpioWrite(IN3, PI_LOW);
+	gpioWrite(IN4, PI_HIGH);
+	changespeed(MOVE_SPEED);
+	return 0;
+	}
+	
+int steer(int angle){
+	if (angle > RIGHT) {
+		angle = RIGHT;
+	}
+	else if (angle < LEFT) {
+		angle=LEFT;
+	}
+	pwm.set_pwm(servo_pin, 0, angle)
+	return 0;
+	}
+
+
+
+int main(void)
+{
+	pwm = PCA9685(0x40);
+	pwm.set_pwm_freq(60);
+	pwm.set_pwm(servo_pin, 0, LEFT);
+	sleep(1);
+	pwm.set_pwm(servo_pin, 0, RIGHT);
+	sleep(1);
+	pwm.set_pwm(servo_pin, 0, CENTER);
+	
+	gpioSetMode(IN1, PI_OUTPUT); 
+	gpioSetMode(IN2, PI_OUTPUT); 
+	gpioSetMode(IN3, PI_OUTPUT); 
+	gpioSetMode(IN4, PI_OUTPUT); 
+	
+	int ret = gpioInitialise();
+	steer(CENTER);
+	forward();
+	sleep(2);
+	stopcar();
+	sleep(0.25);
+
+	backward();
+	sleep(2);
+	stopcar();
+	sleep(0.25);
+
+	steer(LEFT);
+	forward();
+	sleep(2);
+ 
+	steer(RIGHT);
+	forward();
+	sleep(2);  
+
+	backward();
+	sleep(2);  
+
+	steer(LEFT);
+	backward();
+	sleep(2);  
+	stopcar();
+	steer(CENTER);
+	
+	sleep(2);
+	pwm.set_pwm(15, 0, 0);
+
+	return 0;
+}
