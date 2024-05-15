@@ -1,0 +1,30 @@
+#include <pigpio.h>
+#include <unistd.h>
+
+define led_gpio 37
+define motion_pin 35
+
+int main(void){
+	// PIGOIOの初期化
+	int ret = gpioInitialise();
+	if (ret > 0){
+		printf("PIGPIOの初期化に失敗しました");
+		return 1;
+	}
+
+	// 各PINの出力設定
+	gpioSetMode(led_pin, PI_OUTPUT);
+	gpioSetMode(motion_pin, PI_INPUT);
+
+	while (1){
+    	int value = PI_INPUT(motion_pin);
+		if (value! = 0){                          //to read the value of a GPIO pin
+        	gpioWrite(led_gpio, 1);               //turn on led
+        	sleep(1);
+		} else {
+        	gpioWrite(led_gpio, 0);                   //turn off led
+        	sleep(1);
+		}
+	}
+	return 0;
+}
